@@ -39,3 +39,5 @@ streamlit_folium==0.25.0
 streamlit-keplergl==0.3.0
 streamlit-plotly-events==0.0.6
 ipykernel
+SQLAlchemy==2.0.41
+pyodbc==5.2.0
