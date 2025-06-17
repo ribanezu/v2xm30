@@ -1,0 +1,179 @@
+/* -------------------------------
+ESTILO OSCURO PARA DASHBOARD DE TRÁFICO
+--------------------------------*/
+
+/* Fondo general y fuente */
+html, body, .stApp {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1E1E1E !important;
+    color: #f0f0f0 !important;
+}
+
+/* Títulos */
+h1, h2, h3 {
+    color: #E0E0E0;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Subtítulos */
+.traffic-subtitle {
+    color: #94A3B8;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Contenedor principal */
+.stApp {
+    padding: 2rem;
+}
+
+/* Separador visual principal */
+.traffic-header {
+    background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid #374151;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.traffic-period-badge {
+    background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ---------- KPI Cards ---------- */
+.kpi-card {
+    background: linear-gradient(135deg, #2F3542 0%, #1B1F26 100%);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid #3A3F47;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-align: center;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(255, 255, 255, 0.06);
+}
+
+div[data-testid="stMetricValue"] {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f8fafc !important;
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #d1d5db !important;
+}
+
+/* ---------- Contenedores de gráficos ---------- */
+.chart-container {
+    background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid #4B5563;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(255, 255, 255, 0.05);
+    border-color: #6B7280;
+}
+
+/* Títulos de gráficos */
+.chart-title {
+    color: #F3F4F6;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    border-radius: 8px;
+    border: 2px solid #1F2937;
+}
+
+::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+}
+
+/* Botones */
+button, .stButton>button {
+    background: linear-gradient(135deg, #4B5563 0%, #374151 100%);
+    color: #fff;
+    border: 1px solid #6B7280;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button:hover, .stButton>button:hover {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    border-color: #9CA3AF;
+}
+
+/* Efectos de animación */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-container,
+.kpi-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .traffic-header {
+        padding: 1.5rem;
+    }
+
+    .chart-container {
+        padding: 1rem;
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+    }
+}
