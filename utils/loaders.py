@@ -31,7 +31,8 @@ def load_data():
             ordered=True
         )
     if "hour" in df_denm.columns and "hour_label" not in df_denm.columns:
-        df_denm["hour_label"] = df_denm["hour"].apply(lambda x: f"{int(x):02d}:00")
+        df["hour"] = (df["hour"] + 1) % 24  # Para que no se pase de 23
+        df["hour_label"] = df["hour"].apply(lambda x: f"{int(x):02d}:00")
 
     return df, df_denm
 
