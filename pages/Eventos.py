@@ -10,20 +10,31 @@ from keplergl import KeplerGl
 from streamlit_keplergl import keplergl_static
 import geopandas as gpd
 from shapely.geometry import Point
-
+from utils.loaders import load_data, load_m30_data
 
 # Configuración
 st.set_page_config(page_title="Eventos DENM - M30", layout="wide",
     initial_sidebar_state="collapsed",
     page_icon="🚦")
 
-def load_custom_css(path="./style_dark_eventos.css"):
+def load_custom_css(path="./style_dark_demanda.css"):
     with open(path, encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 load_custom_css()
 
-st.title("Eventos DENM")
+
+# ===== HEADER =====
+st.markdown("""
+<div class="main-title">
+    DASHBOARD DE DATOS DE TRÁFICO V2X
+</div>
+<div style="text-align: center; color: #cbd5e1; font-size: 1.1rem; margin-bottom: 2rem;">
+    Análisis de eventos recopilados
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('<h3 class="section-title">  Mapa de eventos</h3>', unsafe_allow_html=True)
 
 
 
@@ -31,7 +42,7 @@ st.title("Eventos DENM")
 # ----------- Cargar datos -----------
 
 @st.cache_data
-def load_data():
+def load_data2():
     # Conexión a la base de datos
     db_url = st.secrets["db_url"]
     engine = create_engine(db_url)
@@ -39,6 +50,7 @@ def load_data():
     df = pd.read_sql("SELECT * FROM denm_ref_message", engine)
 
     df["received_at"] = pd.to_datetime(df["received_at"])
+    df["received_at"] = df["received_at"] + pd.Timedelta(hours=1)
     if "weekday_es" in df.columns:
         df["weekday_es"] = pd.Categorical(
             df["weekday_es"],
@@ -46,22 +58,19 @@ def load_data():
             ordered=True
         )
     if "hour" in df.columns and "hour_label" not in df.columns:
+        df["hour"] = (df["hour"] + 1) % 24  # Para que no se pase de 23
         df["hour_label"] = df["hour"].apply(lambda x: f"{int(x):02d}:00")
 
     df["geometry"] = df.apply(lambda row: Point(row["longitude"], row["latitude"]), axis=1)
     gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
     return df, gdf
 
-df_denm, gdf  = load_data()
+df_denm, gdf  = load_data2()
 orden_dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 
-@st.cache_resource
-def load_shapefile():
-    gdf = gpd.read_file("data/m30_osm_v3.shp")
-    return gdf.to_crs(epsg=25830)
 
-m30 = load_shapefile()
+m30 = load_m30_data()
 
 
 @st.cache_resource
@@ -83,7 +92,6 @@ config = load_kepler_config()
 #     st.rerun()
 
 #### Mapa dinamico de eventos DENM
-st.markdown("## Mapa de Eventos DENM ")
 st.markdown("""
     <div class="map-container">
         <p class="map-title">Eventos DENM en la última semana</p>
@@ -131,8 +139,7 @@ components.html(hide_side_panel_css + html_mapa + resize_fix, height=700, width=
 ## ---------------------------
 # Gráficos de causas y subcausas
 # ---------------------------
-st.markdown("## Causas y subcausas de los eventos DENM")
-
+st.markdown('<h3 class="section-title">  Causas y subcausas de los eventos DENM</h3>', unsafe_allow_html=True)
 # Crear dos columnas
 col1, col2 = st.columns(2)
 
@@ -154,6 +161,24 @@ with col1:
         template="plotly_dark"
     )
     fig_causa.update_layout(height=400, margin=dict(t=50, b=20))
+    fig_causa.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='#f8fafc',
+        title_font_size=16,
+        title_font_color='#f8fafc',
+        xaxis=dict(
+            gridcolor='#475569',
+            showgrid=True,
+            zeroline=False
+        ),
+        yaxis=dict(
+            gridcolor='#475569',
+            showgrid=True,
+            zeroline=False
+        ),
+        hovermode='x unified'
+    )
 
     st.plotly_chart(fig_causa, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -181,6 +206,24 @@ with col2:
             template="plotly_dark"
         )
         fig_subcausa.update_layout(height=400, margin=dict(t=50, b=20))
+        fig_subcausa.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color='#f8fafc',
+            title_font_size=16,
+            title_font_color='#f8fafc',
+            xaxis=dict(
+                gridcolor='#475569',
+                showgrid=True,
+                zeroline=False
+            ),
+            yaxis=dict(
+                gridcolor='#475569',
+                showgrid=True,
+                zeroline=False
+            ),
+            hovermode='x unified'
+        )
         st.plotly_chart(fig_subcausa, use_container_width=True)
     else:
         st.warning(f"No hay subcausas registradas para: {causa_seleccionada}")
@@ -193,8 +236,8 @@ with col2:
 # ---------------------------
 # Eventos por hora según tipo de causa
 # ---------------------------
-st.markdown("## Tipos de evento por hora")
 
+st.markdown('<div class="chart-title">Tipos de evento por hora</div>', unsafe_allow_html=True)
 # Crear un DataFrame con todas las horas posibles
 horas_completas = pd.DataFrame({'hour': range(24)})
 horas_completas['hour_label'] = horas_completas['hour'].apply(lambda x: f"{x:02d}:00")
@@ -235,6 +278,23 @@ fig_barras.update_layout(
     height=400,
     margin=dict(t=50, b=100) 
 )
-
+fig_barras.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='#f8fafc',
+        title_font_size=16,
+        title_font_color='#f8fafc',
+        xaxis=dict(
+            gridcolor='#475569',
+            showgrid=True,
+            zeroline=False
+        ),
+        yaxis=dict(
+            gridcolor='#475569',
+            showgrid=True,
+            zeroline=False
+        ),
+        hovermode='x unified'
+)
 # Renderizado
 st.plotly_chart(fig_barras, use_container_width=True)
