@@ -1,0 +1,233 @@
+{
+  "version": "v1",
+  "config": {
+    "visState": {
+      "filters": [
+        {
+          "dataId": [
+            "Tramos M30"
+          ],
+          "id": "dhps1tyto",
+          "name": [
+            "fecha"
+          ],
+          "type": "timeRange",
+          "value": [
+            1750170619401.2969,
+            1750170642401.2969
+          ],
+          "plotType": "histogram",
+          "animationWindow": "free",
+          "yAxis": null,
+          "view": "enlarged",
+          "speed": 0.3,
+          "enabled": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "mfk7jnr",
+          "type": "geojson",
+          "config": {
+            "dataId": "Tramos M30",
+            "label": "Tramos M30",
+            "color": [
+              255,
+              153,
+              31
+            ],
+            "highlightColor": [
+              252,
+              242,
+              26,
+              255
+            ],
+            "columns": {
+              "geojson": "geometry"
+            },
+            "isVisible": true,
+            "visConfig": {
+              "opacity": 0.8,
+              "strokeOpacity": 0.8,
+              "thickness": 1.8,
+              "strokeColor": null,
+              "colorRange": {
+                "name": "Global Warming",
+                "type": "sequential",
+                "category": "Uber",
+                "colors": [
+                  "#5A1846",
+                  "#900C3F",
+                  "#C70039",
+                  "#E3611C",
+                  "#F1920E",
+                  "#FFC300"
+                ]
+              },
+              "strokeColorRange": {
+                "name": "Custom Palette",
+                "type": "custom",
+                "category": "Custom",
+                "colors": [
+                  "#2DC937",
+                  "#99C140",
+                  "#E7B416",
+                  "#E38627",
+                  "#D13C4F",
+                  "#6B1E53"
+                ]
+              },
+              "radius": 10,
+              "sizeRange": [
+                0,
+                10
+              ],
+              "radiusRange": [
+                0,
+                50
+              ],
+              "heightRange": [
+                0,
+                500
+              ],
+              "elevationScale": 5,
+              "enableElevationZoomFactor": true,
+              "stroked": true,
+              "filled": false,
+              "enable3d": false,
+              "wireframe": false
+            },
+            "hidden": false,
+            "textLabel": [
+              {
+                "field": null,
+                "color": [
+                  255,
+                  255,
+                  255
+                ],
+                "size": 18,
+                "offset": [
+                  0,
+                  0
+                ],
+                "anchor": "start",
+                "alignment": "center",
+                "outlineWidth": 0,
+                "outlineColor": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "background": false,
+                "backgroundColor": [
+                  0,
+                  0,
+                  200,
+                  255
+                ]
+              }
+            ]
+          },
+          "visualChannels": {
+            "colorField": null,
+            "colorScale": "quantile",
+            "strokeColorField": {
+              "name": "nivel_servicio",
+              "type": "string"
+            },
+            "strokeColorScale": "ordinal",
+            "sizeField": null,
+            "sizeScale": "linear",
+            "heightField": null,
+            "heightScale": "linear",
+            "radiusField": null,
+            "radiusScale": "linear"
+          }
+        }
+      ],
+      "effects": [],
+      "interactionConfig": {
+        "tooltip": {
+          "fieldsToShow": {
+            "Tramos M30": [
+              {
+                "name": "osm_id",
+                "format": null
+              },
+              {
+                "name": "speed_mean",
+                "format": ".2~f"
+              },
+              {
+                "name": "name",
+                "format": null
+              }
+            ]
+          },
+          "compareMode": false,
+          "compareType": "absolute",
+          "enabled": true
+        },
+        "brush": {
+          "size": 0.5,
+          "enabled": false
+        },
+        "geocoder": {
+          "enabled": false
+        },
+        "coordinate": {
+          "enabled": false
+        }
+      },
+      "layerBlending": "normal",
+      "overlayBlending": "normal",
+      "splitMaps": [],
+      "animationConfig": {
+        "currentTime": null,
+        "speed": 1
+      },
+      "editor": {
+        "features": [],
+        "visible": true
+      }
+    },
+    "mapState": {
+      "bearing": 0,
+      "dragRotate": false,
+      "latitude": 40.45848547335248,
+      "longitude": -3.6777194464874503,
+      "pitch": 0,
+      "zoom": 11.720357608868003,
+      "isSplit": false,
+      "isViewportSynced": true,
+      "isZoomLocked": false,
+      "splitMapViewports": []
+    },
+    "mapStyle": {
+      "styleType": "dark-matter",
+      "topLayerGroups": {},
+      "visibleLayerGroups": {
+        "label": true,
+        "road": true,
+        "border": false,
+        "building": true,
+        "water": true,
+        "land": true,
+        "3d building": false
+      },
+      "threeDBuildingColor": [
+        15.035172933000911,
+        15.035172933000911,
+        15.035172933000911
+      ],
+      "backgroundColor": [
+        0,
+        0,
+        0
+      ],
+      "mapStyles": {}
+    }
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "version": "v1",
+  "config": {
+    "visState": {
+      "filters": [
+        {
+          "dataId": [
+            "Eventos DENM"
+          ],
+          "id": "82bpqud2",
+          "name": [
+            "received_at"
+          ],
+          "type": "timeRange",
+          "value": [
+            1749625581632,
+            1749631298632
+          ],
+          "plotType": "histogram",
+          "animationWindow": "free",
+          "yAxis": null,
+          "view": "enlarged",
+          "speed": 0.15,
+          "enabled": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "qn1yt0l",
+          "type": "point",
+          "config": {
+            "dataId": "Eventos DENM",
+            "label": "Eventos DENM",
+            "color": [
+              179,
+              173,
+              158
+            ],
+            "highlightColor": [
+              252,
+              242,
+              26,
+              255
+            ],
+            "columns": {
+              "lat": "latitude",
+              "lng": "longitude"
+            },
+            "isVisible": true,
+            "visConfig": {
+              "radius": 10,
+              "fixedRadius": false,
+              "opacity": 1,
+              "outline": false,
+              "thickness": 2,
+              "strokeColor": null,
+              "colorRange": {
+                "name": "Custom Fixed Colors",
+                "type": "qualitative",
+                "category": "custom",
+                "colors": [
+                "#a6cee3",
+                "#1f78b4", 
+                "#6a3d9a" ],
+                "reversed": false
+              },
+              "strokeColorRange": {
+                "name": "Global Warming",
+                "type": "sequential",
+                "category": "Uber",
+                "colors": [
+                  "#5A1846",
+                  "#900C3F",
+                  "#C70039",
+                  "#E3611C",
+                  "#F1920E",
+                  "#FFC300"
+                ]
+              },
+              "radiusRange": [
+                0,
+                50
+              ],
+              "filled": true
+            },
+            "hidden": false,
+            "textLabel": [
+              {
+                "field": null,
+                "color": [
+                  255,
+                  255,
+                  255
+                ],
+                "size": 18,
+                "offset": [
+                  0,
+                  0
+                ],
+                "anchor": "start",
+                "alignment": "center",
+                "outlineWidth": 0,
+                "outlineColor": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "background": false,
+                "backgroundColor": [
+                  0,
+                  0,
+                  200,
+                  255
+                ]
+              }
+            ]
+          },
+          "visualChannels": {
+            "colorField": {
+              "name": "cause_desc",
+              "type": "string"
+            },
+            "colorScale": "ordinal",
+            "colorAggregation": "mode",
+            "colorDomain": ["Traffic condition", "Stationary vehicle", "Dangerous situation"],
+            "strokeColorField": null,
+            "strokeColorScale": "quantile",
+            "sizeField": null,
+            "sizeScale": "linear"
+          }
+        }
+      ],
+      "effects": [],
+      "interactionConfig": {
+        "tooltip": {
+          "fieldsToShow": {
+            "Eventos DENM": [
+              {
+                "name": "station_id",
+                "format": null
+              },
+              {
+                "name": "received_at",
+                "format": "LLL"
+              },
+              {
+                "name": "cause_desc",
+                "format": null
+              },
+              {
+                "name": "subcause_desc",
+                "format": null
+              },
+              {
+                "name": "weekday_es",
+                "format": null
+              }
+            ]
+          },
+          "compareMode": false,
+          "compareType": "absolute",
+          "enabled": true
+        },
+        "brush": {
+          "size": 0.5,
+          "enabled": false
+        },
+        "geocoder": {
+          "enabled": false
+        },
+        "coordinate": {
+          "enabled": false
+        }
+      },
+      "layerBlending": "normal",
+      "overlayBlending": "normal",
+      "splitMaps": [],
+      "animationConfig": {
+        "currentTime": null,
+        "speed": 1
+      },
+      "editor": {
+        "features": [],
+        "visible": true
+      }
+    },
+    "mapState": {
+      "bearing": 0,
+      "dragRotate": false,
+      "latitude": 40.47676328025867,
+      "longitude": -3.6728576187631226,
+      "pitch": 0,
+      "zoom": 14.644176750750857,
+      "isSplit": false,
+      "isViewportSynced": true,
+      "isZoomLocked": false,
+      "splitMapViewports": []
+    },
+    "mapStyle": {
+      "styleType": "dark-matter-nolabels",
+      "topLayerGroups": {},
+      "visibleLayerGroups": {
+        "label": false,
+        "road": true,
+        "border": false,
+        "building": false,
+        "water": false,
+        "land": false,
+        "3d building": false
+      },
+      "threeDBuildingColor": [
+        15.035172933000911,
+        15.035172933000911,
+        15.035172933000911
+      ],
+      "backgroundColor": [
+        0,
+        0,
+        0
+      ],
+      "mapStyles": {}
+    }
+  }
+}

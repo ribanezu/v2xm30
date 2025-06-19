@@ -5,6 +5,12 @@ import streamlit.components.v1 as components
 from datetime import datetime
 from streamlit_plotly_events import plotly_events
 from sqlalchemy import create_engine
+import json
+from keplergl import KeplerGl
+from streamlit_keplergl import keplergl_static
+import geopandas as gpd
+from shapely.geometry import Point
+
 
 # Configuración
 st.set_page_config(page_title="Eventos DENM - M30", layout="wide",
@@ -18,6 +24,8 @@ def load_custom_css(path="./style_dark_eventos.css"):
 load_custom_css()
 
 st.title("Eventos DENM")
+
+
 
 
 # ----------- Cargar datos -----------
@@ -40,33 +48,85 @@ def load_data():
     if "hour" in df.columns and "hour_label" not in df.columns:
         df["hour_label"] = df["hour"].apply(lambda x: f"{int(x):02d}:00")
 
-    return df
+    df["geometry"] = df.apply(lambda row: Point(row["longitude"], row["latitude"]), axis=1)
+    gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
+    return df, gdf
 
-df_denm  = load_data()
+df_denm, gdf  = load_data()
 orden_dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
+
+@st.cache_resource
+def load_shapefile():
+    gdf = gpd.read_file("data/m30_osm_v3.shp")
+    return gdf.to_crs(epsg=25830)
+
+m30 = load_shapefile()
+
+
+@st.cache_resource
+def load_kepler_config(hash_funcs={dict: lambda _: None}):
+    with open("data/config/eventos_denm.json") as f:
+        return json.load(f)
+
+config = load_kepler_config()
+# if st.button("Recargar config"):
+#     load_kepler_config.clear()
+#     st.rerun()
+
+
 # ---------------------------
-# Mapa Kepler.gl
-# ---------------------------
-st.subheader("Mapa de Eventos DENM")
-# HTML fix para forzar el redimensionamiento del mapa
-html_fix = """
+if st.button("Recargar datos", key="reload_btn"):
+    # Limpiar solo lo necesario (no todo)
+    load_data.clear()         # Solo los datos tabulares
+    load_kepler_config.clear() # Solo la configuración
+    st.rerun()
+
+#### Mapa dinamico de eventos DENM
+st.markdown("## Mapa de Eventos DENM ")
+st.markdown("""
+    <div class="map-container">
+        <p class="map-title">Eventos DENM en la última semana</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Asegúrate de que la columna 'received_at' es datetime
+df_denm["received_at"] = pd.to_datetime(df_denm["received_at"])
+
+hoy = pd.Timestamp.now().normalize()
+una_semana_atras = hoy - pd.Timedelta(days=7)
+df_semanal = df_denm[df_denm["received_at"] >= una_semana_atras].copy()
+
+#### MAPA KEPLER
+kepler_map = KeplerGl(height=800, data={"Eventos DENM": df_semanal}, config=config)
+html_mapa = kepler_map._repr_html_()
+if isinstance(html_mapa, bytes):
+    html_mapa = html_mapa.decode("utf-8")
+
+
+# -------------------------
+# 4. Inyectar CSS para ocultar el side panel de Kepler
+# -------------------------
+hide_side_panel_css = """
+<style>
+div[class*="side-bar__close"] {
+    display: none !important;
+}
+</style>
+"""
+
+resize_fix = """
 <script>
   setTimeout(() => {
     window.dispatchEvent(new Event('resize'));
-  }, 200);
+  }, 300);
 </script>
 """
-@st.cache_resource
-def load_html(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
 
-html_content = load_html("./kepler_eventos_ok.gl.html")
-html_inyectado = html_content + html_fix
-components.html(html_inyectado, height=800, width=2000, scrolling=False) 
+# Mostrar en Streamlit
+components.html(hide_side_panel_css + html_mapa + resize_fix, height=700, width=2000, scrolling=False)
 
-## ---------------------------
+
 
 ## ---------------------------
 # Gráficos de causas y subcausas

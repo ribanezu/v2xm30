@@ -6,6 +6,11 @@ from streamlit.components.v1 import html as html_component
 import streamlit.components.v1 as components
 import pyodbc
 from sqlalchemy import create_engine
+import geopandas as gpd
+import json
+from keplergl import KeplerGl
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # ---------------------------
 # Configuración de la app
@@ -53,34 +58,112 @@ def load_data():
 
     return df, df_denm
 
+@st.cache_data
+def load_m30_data():
+    gdf = gpd.read_file("data/m30_osm_v3.shp")
+    gdf = gdf.to_crs(epsg=4326)
+    return gdf
+
+
 df,df_denm = load_data()
 orden_dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+m30 = load_m30_data()
 
-# ---------------------------
-# Mapa Kepler.gl
-# ---------------------------
-st.markdown("# Trayectorias")
-# HTML fix para forzar el redimensionamiento del mapa
-html_fix = """
+
+
+def clasificar_velocidad(v):
+    if v <= 30:
+        return "0–30 km/h"
+    elif v <= 50:
+        return "30–50 km/h"
+    elif v <= 70:
+        return "50–70 km/h"
+    else:
+        return "70-90+ km/h"
+
+
+
+
+
+df['received_at'] = pd.to_datetime(df['received_at'])
+hoy = pd.Timestamp.today().normalize()
+hace_una_semana = hoy - pd.Timedelta(days=7)
+
+# Filtrado
+df_ultima_semana = df[df['received_at'] >= hace_una_semana].copy()
+fclasses_validas = ['motorway', 'motorway_link', 'primary_link']
+df_cam_filtrado = df_ultima_semana[df_ultima_semana["fclass"].isin(fclasses_validas)].copy()
+df_ultima_semana["velocidad_rango"] = df_ultima_semana["speed_kmh"].apply(clasificar_velocidad)
+
+@st.cache_resource
+def load_kepler_config_trayectorias(hash_funcs={dict: lambda _: None}):
+    with open("./data/config/trayectorias.json") as f:
+        return json.load(f)
+
+config_1 = load_kepler_config_trayectorias()
+
+st.markdown("## Trayectorias")
+st.markdown("### Trayectorias de la última semana")
+
+kepler_map = KeplerGl(
+    height=800,
+    data={
+        "Trayectorias ultima semana": df_ultima_semana
+    },
+    config=config_1
+)
+html_mapa_1 = kepler_map._repr_html_()
+if isinstance(html_mapa_1, bytes):
+    html_mapa_1 = html_mapa_1.decode("utf-8")
+
+#CSS y resize fix
+hide_side_panel_css = """
+<style>
+div[class*="side-bar__close"] {
+    display: none !important;
+}
+</style>
+"""
+
+resize_fix = """
 <script>
   setTimeout(() => {
     window.dispatchEvent(new Event('resize'));
-  }, 200);
+  }, 300);
 </script>
 """
-@st.cache_resource
-def load_html(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
+with st.container():
+    components.html(hide_side_panel_css + html_mapa_1 + resize_fix, height=700, width=2000, scrolling=False)
 
-# Cargar el mapa Kepler
-html_content = load_html("./kepler_trayectorias.gl.html")
+# # ---------------------------
+# # Mapa Kepler.gl
+# # ---------------------------
+# st.markdown("# Trayectorias")
+# # HTML fix para forzar el redimensionamiento del mapa
+# html_fix = """
+# <script>
+#   setTimeout(() => {
+#     window.dispatchEvent(new Event('resize'));
+#   }, 200);
+# </script>
+# """
+# @st.cache_resource
+# def load_html(filename):
+#     with open(filename, "r", encoding="utf-8") as f:
+#         return f.read()
 
-# Inyectar el fix
-html_inyectado = html_content + html_fix
+# # Cargar el mapa Kepler
+# html_content = load_html("./kepler_trayectorias.gl.html")
 
-# Mostrar en Streamlit
-components.html(html_inyectado, height=800, width=2000, scrolling=False)
+# # Inyectar el fix
+# html_inyectado = html_content + html_fix
+
+# # Mostrar en Streamlit
+# components.html(html_inyectado, height=800, width=2000, scrolling=False)
+
+
+
+
 
 
 # ---------------------------
@@ -88,31 +171,36 @@ components.html(html_inyectado, height=800, width=2000, scrolling=False)
 # ---------------------------
 df["date"] = df["received_at"].dt.date
 
-#Esto suma vehículos únicos por franja horaria entre todos los días, lo que puede contar un mismo vehículo más de una vez si apareció varios días en la misma franja.
+# #Esto suma vehículos únicos por franja horaria entre todos los días, lo que puede contar un mismo vehículo más de una vez si apareció varios días en la misma franja.
 # df_por_hora = df.groupby("hour_label")["station_id"].nunique().reset_index(name="vehículos") 
 # df_por_hora_avg = df_por_hora.groupby("hour_label")["vehículos"].mean().round(1).reset_index()
 # valor_pico = df_por_hora_avg["vehículos"].max()
 # hora_pico = df_por_hora_avg[df_por_hora_avg["vehículos"] == valor_pico]["hour_label"].values[0]
 
 
-# El máximo número de vehículos únicos registrados en una hora dentro de un mismo día.
+# 1. Agrupar por fecha y franja horaria para contar vehículos únicos por día y franja
 df_por_hora_dia = df.groupby(["date", "hour_label"])["station_id"].nunique().reset_index(name="vehículos")
-valor_pico = df_por_hora_dia["vehículos"].max()
-fila_pico = df_por_hora_dia[df_por_hora_dia["vehículos"] == valor_pico].iloc[0]
+
+# 2. Encontrar la franja horaria con mayor número de vehículos únicos
+fila_pico = df_por_hora_dia.loc[df_por_hora_dia["vehículos"].idxmax()]
 hora_pico = fila_pico["hour_label"]
 fecha_pico = fila_pico["date"]
-#######
+valor_pico = fila_pico["vehículos"]
 
-
-# vel_media = df["speed_kmh"].mean().round(1) media global de todos los CAMs, no por vehiculo ni franja horaria
+# 3. Filtrar DataFrame original a ese pico (hora y fecha concretas)
+df_hora_pico = df[(df["date"] == fecha_pico) & (df["hour_label"] == hora_pico)].copy()
+# 4. Calcular KPIs sobre ese subconjunto:
 vel_media = (
-    df.groupby(["date", "station_id"])["speed_kmh"].mean()
-    .mean().round(1)
-) #media diaria por vehículo y luego promedio
+    df_hora_pico.groupby("station_id")["speed_kmh"]
+    .mean()
+    .mean()
+    .round(1)
+)
+
 last_update = df["day"].max()
 
 
-st.markdown("### KPIs de Tráfico")
+st.markdown("### KPIs de Tráfico Pico")
 ###<h3 style='margin: 0.25rem 0; font-size: 1.5rem'>{valor_pico} vehículos únicos </h3></div>""", unsafe_allow_html=True)
 
 with st.container():
@@ -120,7 +208,7 @@ with st.container():
     with col1:
         st.markdown(f"""<div class='kpi-card' style='padding: 0.85rem; font-size: 0.85rem'>
         <p style='margin: 0.25rem 0'>Pico Diario</p>
-        <h3>{valor_pico} vehículos únicos<br><small>{fecha_pico}</small></h3>""", unsafe_allow_html=True)
+        <h3 style='margin: 0.25rem 0; font-size: 1.5rem'>{valor_pico} vehículos únicos en la fecha {fecha_pico}</h3>""", unsafe_allow_html=True)
 
     with col2:
         st.markdown(f"""<div class='kpi-card' style='padding: 0.85; font-size: 0.85rem'>
@@ -129,7 +217,7 @@ with st.container():
     with col3:
         st.markdown(f"""<div class='kpi-card' style='padding: 0.85; font-size: 0.85rem'>
         <p style='margin: 0.25rem 0'>Hora Pico</p>
-        <h3 style='margin: 0.25rem 0; font-size: 1.5rem'>{hora_pico} </h3></div>""", unsafe_allow_html=True)
+        <h3 style='margin: 0.25rem 0; font-size: 1.5rem'>{hora_pico}h</h3></div>""", unsafe_allow_html=True)
     with col4:
         st.markdown(f"""<div class='kpi-card' style='padding: 0.85; font-size: 0.85rem'>
         <p style='margin: 0.25rem 0'>Última actualización</p>
@@ -205,7 +293,13 @@ fig_heatmap.update_layout(
 # ---------------------------
 # Vehículos por día (Radar)
 # ---------------------------
-df_por_dia = df.groupby("weekday_es")["station_id"].nunique().reset_index(name="vehículos")
+# df_por_dia = df.groupby("weekday_es")["station_id"].nunique().reset_index(name="vehículos")
+# df_por_dia["weekday_es"] = pd.Categorical(df_por_dia["weekday_es"], categories=orden_dias, ordered=True)
+
+df_por_dia = df.drop_duplicates(["station_id", "weekday_es"]) \
+    .groupby("weekday_es")["station_id"].count() \
+    .reset_index(name="vehículos")
+
 df_por_dia["weekday_es"] = pd.Categorical(df_por_dia["weekday_es"], categories=orden_dias, ordered=True)
 
 fig_radar = go.Figure()
@@ -464,7 +558,7 @@ fig_freno.add_trace(go.Scatter(
     x=frenadas_hora["hour_label"],
     y=frenadas_hora["braking_intensity"],
     mode="lines", fill="tozeroy", name="Frenada media",
-    line=dict(color="#10D11A", shape="spline", width=2),
+    line=dict(color="#108AD1", shape="spline", width=2),
     hovertemplate="Hora: %{x}<br>Intensidad frenada media: %{y:.2f} m/s²<extra></extra>"
 ))
 fig_freno.update_layout(
@@ -496,8 +590,8 @@ fig_day_vel = px.line(
 )
 
 fig_day_vel.update_traces(
-    line=dict(width=2, color="#E67685"),
-    marker=dict(size=4, color="#E67685")
+    line=dict(width=2, color="#7687E6"),
+    marker=dict(size=4, color="#7687E6")
 )
 
 fig_day_vel.update_layout(
@@ -527,7 +621,7 @@ fig_day_freno.add_trace(go.Scatter(
     mode="lines",
     fill="tozeroy",
     name="Frenada media",
-    line=dict(color="#7FC583", shape="spline", width=2),
+    line=dict(color="#7F92C5", shape="spline", width=2),
     hovertemplate="Hora: %{x}<br>Frenada media: %{y:.2f} m/s²<extra></extra>"
 ))
 
@@ -579,8 +673,6 @@ with col10:
 
 
 
-
-
 # ---------------------------
 # Informe Día Tipo
 # ---------------------------
@@ -590,20 +682,20 @@ st.markdown("# Informe Día Tipo")
 # 1. Selección de tramo físico
 tramos_disponibles = df["name_osmid"].dropna().unique()
 tramo_seleccionado = st.selectbox("Selecciona un tramo:", sorted(tramos_disponibles))
-
-# 2. Filtrado
 df_tramo = df[df["name_osmid"] == tramo_seleccionado].copy()
 df_denm_tramo = df_denm[df_denm["station_id"].isin(df_tramo["station_id"].unique())].copy()
 
-# 3. Tramo horario y etiquetas
 for _df in [df_tramo, df_denm_tramo]:
     _df["tramo_horario"] = _df["received_at"].dt.floor(periodo)
     _df["hora_label"] = _df["tramo_horario"].dt.strftime("%H:%M")
     _df["hora_label"] = pd.Categorical(_df["hora_label"], categories=[f"{h:02d}:00" for h in range(24)], ordered=True)
 
+df_tramo = df_tramo[df_tramo["weekday_es"] == selected_day]
+df_denm_tramo = df_denm_tramo[df_denm_tramo["weekday_es"] == selected_day]
+
 # 4. Agregación tráfico
 df_diatipo = (
-    df_tramo.groupby(["weekday_es", "hora_label"])
+    df_tramo.groupby(["hora_label"])
     .agg(
         velocidad_media=("speed_kmh", "mean"),
         vehículos=("station_id", "nunique")
@@ -613,30 +705,33 @@ df_diatipo = (
 
 # 5. Agregación de alertas totales
 alertas = (
-    df_denm_tramo.groupby(["weekday_es", "hora_label"])
+    df_denm_tramo.groupby(["hora_label"])
     .size()
     .reset_index(name="alertas")
 )
 
 # 6. Unión tráfico + alertas
-df_diatipo = df_diatipo.merge(alertas, on=["weekday_es", "hora_label"], how="left")
+df_diatipo = df_diatipo.merge(alertas, on="hora_label", how="left")
 df_diatipo["alertas"] = df_diatipo["alertas"].fillna(0)
-df_diatipo = df_diatipo.sort_values(["weekday_es", "hora_label"])
+df_diatipo = df_diatipo.sort_values("hora_label")
 
 # 7. Gráficos tráfico y velocidad
 fig_vel_tipo_dia = px.line(
     df_diatipo,
-    x="hora_label", y="velocidad_media", color="weekday_es",
-    labels={"hora_label": "Hora", "velocidad_media": "Velocidad (km/h)", "weekday_es": "Día"},
-    template="plotly_dark"
+    x="hora_label", y="velocidad_media",
+    labels={"hora_label": "Hora", "velocidad_media": "Velocidad (km/h)"},
+    template="plotly_dark",
+    markers=True,
+    line_shape="spline",
+    color_discrete_sequence=["#00BFFF"]
 )
 
 fig_intensidad_dia_tipo = px.bar(
     df_diatipo,
-    x="hora_label", y="vehículos", color="weekday_es",
-    barmode="group",
-    labels={"hora_label": "Hora", "vehículos": "Vehículos únicos", "weekday_es": "Día"},
-    template="plotly_dark"
+    x="hora_label", y="vehículos",
+    labels={"hora_label": "Hora", "vehículos": "Vehículos únicos"},
+    template="plotly_dark",
+    color_discrete_sequence=["#3C7FFB"]
 )
 
 # -----------------------------
@@ -651,7 +746,7 @@ if evento_seleccionado != "Todos":
 
 # Agregación de eventos y subcausas
 df_eventos_agg = (
-    df_eventos.groupby(["weekday_es", "hora_label"])
+    df_eventos.groupby("hora_label")
     .agg(
         eventos=("id", "count"),
         subcausas=("subcause_desc", lambda x: ', '.join(x.dropna().unique()))
@@ -660,13 +755,13 @@ df_eventos_agg = (
 )
 
 # Gráfico de eventos
-fig_eventos = px.line(
-    df_eventos_agg.sort_values(["weekday_es", "hora_label"]),
-    x="hora_label", y="eventos", color="weekday_es",
-    markers=True,
-    labels={"hora_label": "Hora", "eventos": "Eventos", "weekday_es": "Día"},
+fig_eventos = px.bar(
+    df_eventos_agg.sort_values("hora_label"),
+    x="hora_label", y="eventos",
+    labels={"hora_label": "Hora", "eventos": "Eventos"},
     template="plotly_dark",
-    hover_data={"subcausas": True}
+    hover_data={"subcausas": True},
+    color_discrete_sequence=["#76D5E6"]
 )
 
 # ---------------------------
@@ -675,20 +770,133 @@ fig_eventos = px.line(
 col11, col12 = st.columns(2)
 with col11:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-    st.markdown(f'<div class="chart-title">Velocidad media por día tipo - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="chart-title">Velocidad media - {selected_day} - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
     st.plotly_chart(fig_vel_tipo_dia, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col12:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-    st.markdown(f'<div class="chart-title">Intensidad de tráfico por día tipo - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="chart-title">Intensidad de tráfico - {selected_day} - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
     st.plotly_chart(fig_intensidad_dia_tipo, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 col13, col14 = st.columns(2)
 with col13:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-    st.markdown(f'<div class="chart-title">Evento: ({evento_seleccionado}) por hora - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="chart-title">Evento: {evento_seleccionado} - {selected_day} - Tramo {tramo_seleccionado}</div>', unsafe_allow_html=True)
     st.plotly_chart(fig_eventos, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+
+#########################
+m30_filtrado = m30[['osm_id', 'geometry']]
+df_cam = df.merge(m30_filtrado, on="osm_id", how="left")
+
+# 2. Filtrar solo las fclass válidas ANTES de calcular métricas
+fclasses_validas = ['motorway', 'motorway_link', 'primary_link']
+df_cam_filtrado = df_cam[df_cam["fclass"].isin(fclasses_validas)].copy()
+
+df_cam_filtrado['received_at'] = pd.to_datetime(df_cam_filtrado['received_at'])
+df_cam_filtrado['fecha'] = df_cam_filtrado['received_at']
+
+
+
+df_global = df_cam_filtrado.groupby(['station_id', 'osm_id', 'hour', 'weekday_es']).agg({
+    'speed_kmh': 'mean',
+    'longitudinal_acc': 'mean',
+    'lateral_acc': 'mean',
+    'lanes': 'first',
+    'fecha': 'first'
+}).reset_index()
+
+# Paso 2: Agregar métricas por osm_id, hour y weekday
+metricas_2 = (
+    df_global
+    .groupby(['osm_id', 'hour', 'weekday_es'])
+    .agg({
+        'station_id': 'nunique',
+        'speed_kmh': ['mean', 'max', 'min', 'std',
+                      lambda x: x.quantile(0.25),
+                      lambda x: x.quantile(0.75)],
+        'longitudinal_acc': ['mean', 'max', 'min'],
+        'lateral_acc': ['mean', 'max'],
+        'lanes': 'first',
+        'fecha': 'first'  
+    })
+)
+
+# Renombrar columnas
+metricas_2.columns = [
+    'conteo_vehiculos',
+    'speed_mean', 'speed_max', 'speed_min', 'speed_std',
+    'speed_q25', 'speed_q75',
+    'long_acc_mean', 'long_acc_max', 'long_acc_min',
+    'lat_acc_mean', 'lat_acc_max',
+    'lanes',
+    'fecha'
+]
+
+# Restaurar índice como columnas
+metricas_2.reset_index(inplace=True)
+
+# Crear hour_label como "08:00"
+metricas_2['hour_label'] = metricas_2['hour'].apply(lambda x: f"{int(x):02d}:00")
+df_velocidades = metricas_2.merge(
+    m30[['osm_id', 'geometry', 'name', 'maxspeed','fclass', 'ref']],
+    on='osm_id',
+    how='left'
+)
+gdf_velocidades = gpd.GeoDataFrame(df_velocidades, geometry='geometry', crs=m30.crs)
+
+gdf_velocidades["fecha_kepler"] = pd.to_datetime("2025-06-19 " + metricas_2["hour_label"])
+
+
+gdf_velocidades["velocidad_rango"] = gdf_velocidades["speed_mean"].apply(clasificar_velocidad)
+
+
+### -------------------------------
+### MAPA 2
+st.markdown("# Mapa de Velocidades por Tramo historico")
+
+@st.cache_resource
+def load_kepler_config_velocidades(hash_funcs={dict: lambda _: None}):
+    with open("./data/config/velocidades_tramos.json") as f:
+        return json.load(f)
+
+config_2 = load_kepler_config_velocidades()
+
+
+kepler_map = KeplerGl(
+    height=800,
+    data={
+        "Velocidad tramos historico": gdf_velocidades
+    },
+    config=config_2
+)
+
+
+
+html_mapa_2 = kepler_map._repr_html_()
+if isinstance(html_mapa_2, bytes):
+    html_mapa_2 = html_mapa_2.decode("utf-8")
+
+#CSS y resize fix
+hide_side_panel_css = """
+<style>
+div[class*="side-bar__close"] {
+    display: none !important;
+}
+</style>
+"""
+
+resize_fix = """
+<script>
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 300);
+</script>
+"""
+
+# # Mostrar el mapa en Streamlit
+with st.container():
+    components.html(hide_side_panel_css + html_mapa_2 + resize_fix, height=700, width=2000, scrolling=False)

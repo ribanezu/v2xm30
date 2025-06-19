@@ -1,0 +1,239 @@
+{
+  "version": "v1",
+  "config": {
+    "visState": {
+      "filters": [
+        {
+          "dataId": [
+            "Velocidad tramos historico"
+          ],
+          "id": "ez6vukzad",
+          "name": [
+            "fecha_kepler"
+          ],
+          "type": "timeRange",
+          "value": [
+            1750291200000,
+            1750293724000
+          ],
+          "plotType": "histogram",
+          "animationWindow": "free",
+          "yAxis": null,
+          "view": "enlarged",
+          "speed": 0.5,
+          "enabled": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "sa078fi",
+          "type": "geojson",
+          "config": {
+            "dataId": "Velocidad tramos historico",
+            "label": "Velocidad tramos historico",
+            "color": [
+              18,
+              92,
+              119
+            ],
+            "highlightColor": [
+              252,
+              242,
+              26,
+              255
+            ],
+            "columns": {
+              "geojson": "geometry"
+            },
+            "isVisible": true,
+            "visConfig": {
+              "opacity": 0.8,
+              "strokeOpacity": 0.8,
+              "thickness": 0.8,
+              "strokeColor": null,
+              "colorRange": {
+                "name": "Global Warming",
+                "type": "sequential",
+                "category": "Uber",
+                "colors": [
+                  "#5A1846",
+                  "#900C3F",
+                  "#C70039",
+                  "#E3611C",
+                  "#F1920E",
+                  "#FFC300"
+                ]
+              },
+              "strokeColorRange": {
+                "name": "Custom Palette",
+                "type": "custom",
+                "category": "Custom",
+                "colors": [
+                  "#800000",
+                  "#FF0000",
+                  "#FFC000",
+                  "#00B050"
+                ]
+              },
+              "radius": 10,
+              "sizeRange": [
+                0,
+                10
+              ],
+              "radiusRange": [
+                0,
+                50
+              ],
+              "heightRange": [
+                0,
+                500
+              ],
+              "elevationScale": 5,
+              "enableElevationZoomFactor": true,
+              "stroked": true,
+              "filled": false,
+              "enable3d": false,
+              "wireframe": false
+            },
+            "hidden": false,
+            "textLabel": [
+              {
+                "field": null,
+                "color": [
+                  255,
+                  255,
+                  255
+                ],
+                "size": 18,
+                "offset": [
+                  0,
+                  0
+                ],
+                "anchor": "start",
+                "alignment": "center",
+                "outlineWidth": 0,
+                "outlineColor": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "background": false,
+                "backgroundColor": [
+                  0,
+                  0,
+                  200,
+                  255
+                ]
+              }
+            ]
+          },
+          "visualChannels": {
+            "colorField": null,
+            "colorScale": "quantile",
+            "strokeColorField": {
+              "name": "speed_mean",
+              "type": "real"
+            },
+            "strokeColorScale": "quantile",
+            "sizeField": null,
+            "sizeScale": "linear",
+            "heightField": null,
+            "heightScale": "linear",
+            "radiusField": null,
+            "radiusScale": "linear"
+          }
+        }
+      ],
+      "effects": [],
+      "interactionConfig": {
+        "tooltip": {
+          "fieldsToShow": {
+            "Velocidad tramos historico": [
+              {
+                "name": "osm_id",
+                "format": null
+              },
+              {
+                "name": "hour",
+                "format": null
+              },
+              {
+                "name": "weekday_es",
+                "format": null
+              },
+              {
+                "name": "conteo_vehiculos",
+                "format": null
+              },
+              {
+                "name": "speed_mean",
+                "format": null
+              }
+            ]
+          },
+          "compareMode": false,
+          "compareType": "absolute",
+          "enabled": true
+        },
+        "brush": {
+          "size": 0.5,
+          "enabled": false
+        },
+        "geocoder": {
+          "enabled": false
+        },
+        "coordinate": {
+          "enabled": false
+        }
+      },
+      "layerBlending": "normal",
+      "overlayBlending": "normal",
+      "splitMaps": [],
+      "animationConfig": {
+        "currentTime": null,
+        "speed": 1
+      },
+      "editor": {
+        "features": [],
+        "visible": true
+      }
+    },
+    "mapState": {
+      "bearing": 0,
+      "dragRotate": false,
+      "latitude": 40.479143302981875,
+      "longitude": -3.674212212521396,
+      "pitch": 0,
+      "zoom": 14.675357009553341,
+      "isSplit": false,
+      "isViewportSynced": true,
+      "isZoomLocked": false,
+      "splitMapViewports": []
+    },
+    "mapStyle": {
+      "styleType": "dark-matter",
+      "topLayerGroups": {},
+      "visibleLayerGroups": {
+        "label": true,
+        "road": true,
+        "border": false,
+        "building": true,
+        "water": true,
+        "land": true,
+        "3d building": false
+      },
+      "threeDBuildingColor": [
+        15.035172933000911,
+        15.035172933000911,
+        15.035172933000911
+      ],
+      "backgroundColor": [
+        0,
+        0,
+        0
+      ],
+      "mapStyles": {}
+    }
+  }
+}
