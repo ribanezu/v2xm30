@@ -75,12 +75,12 @@ config = load_kepler_config()
 #     st.rerun()
 
 
-# ---------------------------
-if st.button("Recargar datos", key="reload_btn"):
-    # Limpiar solo lo necesario (no todo)
-    load_data.clear()         # Solo los datos tabulares
-    load_kepler_config.clear() # Solo la configuración
-    st.rerun()
+# # ---------------------------
+# if st.button("Recargar datos", key="reload_btn"):
+#     # Limpiar solo lo necesario (no todo)
+#     load_data.clear()         # Solo los datos tabulares
+#     load_kepler_config.clear() # Solo la configuración
+#     st.rerun()
 
 #### Mapa dinamico de eventos DENM
 st.markdown("## Mapa de Eventos DENM ")
