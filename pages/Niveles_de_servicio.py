@@ -8,6 +8,8 @@ from shapely.geometry import Point
 from keplergl import KeplerGl
 import json
 from utils.loaders import load_data, load_m30_data
+import psutil
+import os
 
 
 
@@ -28,6 +30,16 @@ def load_custom_css(path="./style_dark_demanda.css"):
 
 load_custom_css()
 
+# Función para monitorear memoria (opcional)
+def show_memory_usage():
+    """Muestra el uso de memoria actual"""
+    try:
+        process = psutil.Process(os.getpid())
+        memory_mb = process.memory_info().rss / 1024 / 1024
+        return f"{memory_mb:.1f} MB"
+    except:
+        return "N/A"
+
 # ===== HEADER =====
 st.markdown("""
 <div class="main-title">
@@ -39,6 +51,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<h3 class="section-title">  Mapa de niveles de servicio en la última hora</h3>', unsafe_allow_html=True)
+
+
+# Mostrar uso de memoria en sidebar (opcional)
+with st.sidebar:
+    st.metric("Memoria en uso", show_memory_usage())
+
 # ---------------------------
 # Cargar datos
 # ---------------------------

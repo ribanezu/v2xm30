@@ -11,6 +11,8 @@ from streamlit_keplergl import keplergl_static
 import geopandas as gpd
 from shapely.geometry import Point
 from utils.loaders import load_data, load_m30_data
+import psutil
+import os
 
 # Configuración
 st.set_page_config(page_title="Eventos DENM - M30", layout="wide",
@@ -23,6 +25,15 @@ def load_custom_css(path="./style_dark_demanda.css"):
 
 load_custom_css()
 
+# Función para monitorear memoria (opcional)
+def show_memory_usage():
+    """Muestra el uso de memoria actual"""
+    try:
+        process = psutil.Process(os.getpid())
+        memory_mb = process.memory_info().rss / 1024 / 1024
+        return f"{memory_mb:.1f} MB"
+    except:
+        return "N/A"
 
 # ===== HEADER =====
 st.markdown("""
@@ -36,7 +47,9 @@ st.markdown("""
 
 st.markdown('<h3 class="section-title">  Mapa de eventos</h3>', unsafe_allow_html=True)
 
-
+# Mostrar uso de memoria en sidebar (opcional)
+with st.sidebar:
+    st.metric("Memoria en uso", show_memory_usage())
 
 
 # ----------- Cargar datos -----------
