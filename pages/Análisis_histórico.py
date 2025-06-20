@@ -17,7 +17,12 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # ---------------------------
 # Configuración de la app
 # ---------------------------
-st.set_page_config(page_title="Demanda de Tráfico", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="Dashboard de Tráfico V2X", 
+    layout="wide", 
+    initial_sidebar_state="collapsed",
+    page_icon="🚗"
+)
 
 def load_custom_css(path="./style_dark_demanda.css"):
     """Carga el CSS personalizado desde un archivo."""

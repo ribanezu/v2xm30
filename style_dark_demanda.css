@@ -9,13 +9,13 @@
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     --success-color: #22c55e;
-    --background-primary: #0f172a;
-    --background-secondary: #0f172a;
-    --background-card: #0f172a;
+    --background-primary: #000000;
+    --background-secondary: #000000;
+    --background-card: #000000;
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
-    --border-color: #0f172a;
+    --border-color: #000000;
     --shadow-color: rgba(0, 0, 0, 0.25);
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);

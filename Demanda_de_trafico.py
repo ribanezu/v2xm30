@@ -239,6 +239,9 @@ df_ultima_semana, df_cam_filtrado, m30, df_denm = process_data()
 orden_dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 config_1 = load_kepler_config_trayectorias()
 
+
+
+
 # ===== HEADER =====
 st.markdown("""
 <div class="main-title">

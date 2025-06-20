@@ -13,12 +13,11 @@ import os
 
 
 
-# Configuración de página
 st.set_page_config(
-    page_title="Niveles de servicio", 
-    layout="wide",
+    page_title="Dashboard de Tráfico V2X", 
+    layout="wide", 
     initial_sidebar_state="collapsed",
-    page_icon="🚦"
+    page_icon="🚗"
 )
 
 

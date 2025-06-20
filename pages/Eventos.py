@@ -15,9 +15,12 @@ import psutil
 import os
 
 # Configuración
-st.set_page_config(page_title="Eventos DENM - M30", layout="wide",
+st.set_page_config(
+    page_title="Dashboard de Tráfico V2X", 
+    layout="wide", 
     initial_sidebar_state="collapsed",
-    page_icon="🚦")
+    page_icon="🚗"
+)
 
 def load_custom_css(path="./style_dark_demanda.css"):
     with open(path, encoding="utf-8") as f:
