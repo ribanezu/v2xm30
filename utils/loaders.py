@@ -8,8 +8,8 @@ def load_data():
     db_url = st.secrets["db_url"]
     engine = create_engine(db_url)
 
-    df = pd.read_sql("SELECT * FROM cam_ref_message", engine)
-    df_denm = pd.read_sql("SELECT * FROM denm_ref_message", engine)
+    df = pd.read_sql("SELECT * FROM cam_ref_message WHERE received_at > '2025-06-11 00:00:00'", engine)
+    df_denm = pd.read_sql("SELECT * FROM denm_ref_message WHERE received_at > '2025-06-11 00:00:00'", engine)
 
     df["received_at"] = pd.to_datetime(df["received_at"])
     df["received_at"] = df["received_at"] + pd.Timedelta(hours=1)
